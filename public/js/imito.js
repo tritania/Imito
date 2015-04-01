@@ -34,11 +34,11 @@ function getSlots() {
         gaps = totalSlots - 1,
         size = (totalSlots * slotSize) + (gaps * gapSize),
         startingXPos = (width - size) / 2,
-        startingYPos = (height - slotSize)  / 2,
+        startingYPos = (height - slotSize)  / 2 - 50,
         i = 0;
     
     for (i; i < totalSlots; i++) {
-        var x = startingXPos + (x * (slotSize + gapSize));
+        var x = startingXPos + (i * (slotSize + gapSize));
         slots[i] = { x: x, y: startingYPos };
     }
     
