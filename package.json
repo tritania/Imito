@@ -1,0 +1,16 @@
+{
+  "name": "Imito",
+  "version": "0.0.1",
+  "description": "LeapMotion HTML5 game",
+  "main": "index.html",
+
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tritania/Imito.git"
+  },
+  "license": "GNU version 2",
+  "homepage": "https://github.com/tritania/Imito",
+  "dependencies": {
+      "express": "^4.1.2",
+  }
+}
