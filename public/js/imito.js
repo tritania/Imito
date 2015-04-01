@@ -34,7 +34,7 @@ function getSlots() {
         gaps = totalSlots - 1,
         size = (totalSlots * slotSize) + (gaps * gapSize),
         startingXPos = (width - size) / 2,
-        startingYPos = (height - slotSize)  / 2 - 50,
+        startingYPos = (height - slotSize)  / 2 - 110,
         i = 0;
     
     for (i; i < totalSlots; i++) {
@@ -44,7 +44,3 @@ function getSlots() {
     
         
 }
-
-Leap.loop(function(frame) {
-
-});

@@ -9,3 +9,10 @@ body {
 .container {
     z-index: 3;
 }
+
+.text {
+    padding-top: 60px;
+    width: auto;
+    margin: 0 auto;
+    text-align:center
+}

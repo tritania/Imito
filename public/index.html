@@ -9,6 +9,10 @@
         <script src="//js.leapmotion.com/leap-plugins-0.1.10.js"></script>
     </head>
     <body>
+        <script>
+            Leap.loop(function (frame) {
+            }).use('screenPosition', { scale: 0.25 });
+        </script>
         <div class="container">
             <div class="text">
                 <p id="gtext">TESTING TESTING TESTING<p>
