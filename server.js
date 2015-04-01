@@ -1,10 +1,10 @@
 var express = require("express"),
     app = express(),
-    worldgen = require('./utils/world'),
     methodOverride = require('method-override'),
     errorHandler = require('errorhandler'),
-    port = 9090;
-
+    port = app.listen(9090);
+    start();
+    
 function start() {
     app.use(methodOverride());
     app.use(express.static(__dirname + '/public'));
