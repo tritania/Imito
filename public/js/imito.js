@@ -13,9 +13,10 @@ var width = document.documentElement.clientWidth,
     color = ["0xFF0000","0x001EFF","0xFFDA00","0x067A29","0x931493"],
     grabed,
     shape,
-    col,
+    col = 0, 
     locked = true,
-    frameCounter,
+    selection = 100,
+    frameCounter = 0,
     shapePicked = false;
  
 function preload() {
@@ -68,9 +69,13 @@ function addShape(type) {
 }
 
 function addColor(type) {
-    if (type > 0 || type < 6) {
-        grabed.tint = color[type];
+    console.log(type);
+    if (type == 0 && col != 0) {
         locked = false;
+    } else if (type > 0 && type < 6) {
+        col = type;
+        type = type - 1;
+        grabed.tint = color[type];
     }
 }
 
@@ -84,14 +89,33 @@ Leap.loop(function (frame) {
                 var finger = hand.fingers[f];
                 if(finger.extended) extendedFingers++;
             }
-            addShape(extendedFingers);
+            if (selection == extendedFingers) {
+                frameCounter++;   
+                if (frameCounter == 25) {
+                    addShape(extendedFingers);
+                    selection = 100;
+                    frameCounter = 0;
+                }
+            } else {
+                selection = extendedFingers;   
+                frameCounter = 0;
+            }
         } else if (shapePicked) { //pick a color
             var extendedFingers = 0;
             for(var f = 0; f < hand.fingers.length; f++){
                 var finger = hand.fingers[f];
                 if(finger.extended) extendedFingers++;
             }
-            addColor(extendedFingers);
+            if (selection == extendedFingers) {
+                frameCounter++;   
+                if (frameCounter == 25) {
+                    addColor(extendedFingers);
+                    frameCounter = 0;
+                }
+            } else {
+                selection = extendedFingers;   
+                frameCounter = 0;
+            }
         }
     });
 }).use('screenPosition', { scale: 0.25 });
