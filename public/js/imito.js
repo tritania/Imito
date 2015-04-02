@@ -38,14 +38,14 @@ function update() {
 }
 
 function moveGrabbed(position, roll) {
-    grabed.x = position[0];
-    grabed.y = position[1];
+    grabed.x = position[0] * width;
+    grabed.y = (1-position[1]) * height;
     grabed.rotation = roll * -1;
 }
 
 Leap.loop(function (frame) {
     frame.hands.forEach(function(hand, index) {
-        moveGrabbed(hand.screenPosition(), hand.roll());
+        moveGrabbed(frame.interactionBox.normalizePoint(hand.palmPosition, true), hand.roll());
     });
 }).use('screenPosition', { scale: 0.25 });
 
