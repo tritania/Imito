@@ -12,11 +12,20 @@ var width = document.documentElement.clientWidth,
     actual = [], //actual values
     types = ["1","2","3","4","5","6","7","8","9","10"],
     color = ["1","2","3","4","5","6","7","8","9","10"], //use sprite.tint to change color
-    grabed;
+    grabed,
+    shape,
+    col,
+    locked = true;
+    shapePicked = false;
  
 function preload() {
-    game.load.spritesheet('1', 'assets/S1.png', 200, 200); //only need shapes
-    game.load.spritesheet('2', 'assets/S2.png', 200, 200);
+    game.load.spritesheet('1', 'assets/circle.png', 400, 400); //only need shapes
+    game.load.spritesheet('2', 'assets/hexagon.png', 400, 400);
+    game.load.spritesheet('3', 'assets/octagon.png', 400, 400);
+    game.load.spritesheet('4', 'assets/pentagon.png', 400, 400);
+    game.load.spritesheet('5', 'assets/square.png', 400, 400);
+    game.load.spritesheet('trash', 'assets/trash.png', 210, 210);
+    game.load.spritesheet('color', 'assets/color.png', 200, 200);
     game.load.spritesheet('slot', 'assets/slot.png', 210, 210);
     getSlots();
 }
@@ -24,13 +33,15 @@ function preload() {
 function create() {
     game.stage.backgroundColor = '#2f2f2b';
     game.physics.startSystem(Phaser.Physics.P2JS);
+    grabed = game.add.sprite(-3000, -3000, '1');
     
     for (var i = 0; i < slots.length; i++) {
         game.add.sprite(slots[i].x, slots[i].y, 'slot')   
     }
     
-    grabed = game.add.sprite(30, 30, '1')
-    grabed.anchor.setTo(0.5, 0.5);
+    game.add.sprite(slots[slots.length-1].x, slots[0].y + 240, 'trash');
+    
+
 }
 
 function update() {
@@ -43,9 +54,41 @@ function moveGrabbed(position, roll) {
     grabed.rotation = roll * -1;
 }
 
+function addShape(type) {
+    if (type == 0 && shape > 0) {
+        shapePicked = true;  
+    } else if (type <= 5 || type != 0) {
+        shape = type;
+        grabed.kill();
+        grabed = game.add.sprite(30, 30, type);
+        grabed.width = 200;
+        grabed.height = 200;
+        grabed.anchor.setTo(0.5, 0.5);
+    }
+}
+
+function addColor(type) {
+    
+}
+
 Leap.loop(function (frame) {
     frame.hands.forEach(function(hand, index) {
-        moveGrabbed(frame.interactionBox.normalizePoint(hand.palmPosition, true), hand.roll());
+        if (!locked) { //ready to be placed?
+            moveGrabbed(frame.interactionBox.normalizePoint(hand.palmPosition, true), hand.roll());
+        } else if (!shapePicked) { //pick a shape
+            var extendedFingers = 0;
+            for(var f = 0; f < hand.fingers.length; f++){
+                var finger = hand.fingers[f];
+                if(finger.extended) extendedFingers++;
+            }
+            addShape(extendedFingers);
+        } else if (shapePicked) { //pick a color
+            var extendedFingers = 0;
+            for(var f = 0; f < hand.fingers.length; f++){
+                var finger = hand.fingers[f];
+                if(finger.extended) extendedFingers++;
+            }
+        }
     });
 }).use('screenPosition', { scale: 0.25 });
 
@@ -60,7 +103,7 @@ function getSlots() {
         gaps = totalSlots - 1,
         size = (totalSlots * slotSize) + (gaps * gapSize),
         startingXPos = (width - size) / 2,
-        startingYPos = (height - slotSize)  / 2,
+        startingYPos = (height - slotSize - 200)  / 2,
         i = 0;
     
     for (i; i < totalSlots; i++) {
