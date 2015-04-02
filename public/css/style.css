@@ -7,12 +7,15 @@ body {
 }
 
 .container {
-    z-index: 3;
+
 }
 
 .text {
-    padding-top: 60px;
-    width: auto;
-    margin: 0 auto;
-    text-align:center
+    position: fixed;
+    top:8%;
+    left:50%;
+    margin-left: -150px;
+    width: 300px;
+    text-align:center;
+    z-index: 3;
 }
