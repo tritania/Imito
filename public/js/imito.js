@@ -17,6 +17,7 @@ var width = document.documentElement.clientWidth,
     locked = true,
     selection = 100,
     frameCounter = 0,
+    check,
     shapePicked = false;
  
 function preload() {
@@ -26,8 +27,8 @@ function preload() {
     game.load.spritesheet('4', 'assets/pentagon.png', 400, 400);
     game.load.spritesheet('5', 'assets/square.png', 400, 400);
     game.load.spritesheet('trash', 'assets/trash.png', 210, 210);
-    game.load.spritesheet('color', 'assets/color.png', 200, 200);
     game.load.spritesheet('slot', 'assets/slot.png', 210, 210);
+    game.load.spritesheet('check', 'assets/check.png', 30, 30);
     getSlots();
 }
 
@@ -49,6 +50,10 @@ function update() {
 
 }
 
+function addCheck() {
+    check = game.add.sprite((width / 2), height - 30, 'check');
+}
+
 function moveGrabbed(position, roll) {
     grabed.x = position[0] * width;
     grabed.y = (1-position[1]) * height;
@@ -58,6 +63,7 @@ function moveGrabbed(position, roll) {
 function addShape(type) {
     if (type == 0 && shape > 0) {
         shapePicked = true;  
+        addCheck();
     } else if (type <= 5 || type != 0) {
         shape = type;
         grabed.kill();
