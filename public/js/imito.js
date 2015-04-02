@@ -10,12 +10,12 @@ var width = document.documentElement.clientWidth,
     shapes = [], //position of shapes
     guess = [], //players guesses
     actual = [], //actual values
-    types = ["1","2","3","4","5","6","7","8","9","10"],
-    color = ["1","2","3","4","5","6","7","8","9","10"], //use sprite.tint to change color
+    color = ["0xFF0000","0x001EFF","0xFFDA00","0x067A29","0x931493"],
     grabed,
     shape,
     col,
-    locked = true;
+    locked = true,
+    frameCounter,
     shapePicked = false;
  
 function preload() {
@@ -60,7 +60,7 @@ function addShape(type) {
     } else if (type <= 5 || type != 0) {
         shape = type;
         grabed.kill();
-        grabed = game.add.sprite(30, 30, type);
+        grabed = game.add.sprite((width / 2), height - 250, type);
         grabed.width = 200;
         grabed.height = 200;
         grabed.anchor.setTo(0.5, 0.5);
@@ -68,7 +68,10 @@ function addShape(type) {
 }
 
 function addColor(type) {
-    
+    if (type > 0 || type < 6) {
+        grabed.tint = color[type];
+        locked = false;
+    }
 }
 
 Leap.loop(function (frame) {
@@ -88,6 +91,7 @@ Leap.loop(function (frame) {
                 var finger = hand.fingers[f];
                 if(finger.extended) extendedFingers++;
             }
+            addColor(extendedFingers);
         }
     });
 }).use('screenPosition', { scale: 0.25 });
