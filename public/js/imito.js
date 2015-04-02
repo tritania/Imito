@@ -12,12 +12,14 @@ var width = document.documentElement.clientWidth,
     actual = [], //actual values
     color = ["0xFF0000","0x001EFF","0xFFDA00","0x067A29","0x931493"],
     grabed,
+    position,
     shape,
     col = 0, 
     locked = true,
     selection = 100,
     frameCounter = 0,
     check,
+    trash,
     shapePicked = false;
  
 function preload() {
@@ -41,13 +43,27 @@ function create() {
         game.add.sprite(slots[i].x, slots[i].y, 'slot')   
     }
     
-    game.add.sprite(slots[slots.length-1].x, slots[0].y + 240, 'trash');
+    trash = game.add.sprite(slots[slots.length-1].x, slots[0].y + 240, 'trash');
     
 
 }
 
 function update() {
 
+}
+
+function checkBounds() {
+    var i;
+    var bound = 25;
+    for (i = 0; i < slots.length; i++) {
+        if (Math.abs(grabed.x - slots[i].cX) < bound && Math.abs(grabed.y - slots[i].cY) < bound) {
+            return i;
+        }
+    }
+    if (Math.abs(grabed.x - (trash.x + 105)) < bound && Math.abs(grabed.y - (trash.y + 105)) < bound)
+        return 'trash';
+    else 
+        return -1;
 }
 
 function addCheck() {
@@ -62,6 +78,7 @@ function moveGrabbed(position, roll) {
 
 function addShape(type) {
     if (type == 0 && shape > 0) {
+        shape = 0;
         shapePicked = true;  
         addCheck();
     } else if (type <= 5 || type != 0) {
@@ -75,9 +92,11 @@ function addShape(type) {
 }
 
 function addColor(type) {
-    console.log(type);
     if (type == 0 && col != 0) {
+        col = 0;
         locked = false;
+        shapePicked = false;
+        check.kill();
     } else if (type > 0 && type < 6) {
         col = type;
         type = type - 1;
@@ -85,10 +104,41 @@ function addColor(type) {
     }
 }
 
+function slotLocker(slot) {
+    if (slot == -1) {
+        
+    } else if (slot == 'trash') {
+        grabed.kill();
+        locked = true;
+    } else if (slot >= 0 && slot < slots.length -1) {
+     //lock the shape in 
+        grabed.kill();
+        locked = true;
+    }
+}
+
 Leap.loop(function (frame) {
     frame.hands.forEach(function(hand, index) {
         if (!locked) { //ready to be placed?
             moveGrabbed(frame.interactionBox.normalizePoint(hand.palmPosition, true), hand.roll());
+            var lockIt = checkBounds();
+            var extendedFingers = 0;
+            for(var f = 0; f < hand.fingers.length; f++){
+                var finger = hand.fingers[f];
+                if(finger.extended) extendedFingers++;
+            }
+            if (selection == extendedFingers && position == lockIt) {
+                frameCounter++;   
+                if (frameCounter == 25 && extendedFingers == 0) {
+                    slotLocker(lockIt);
+                    frameCounter = 0;
+                    selection = 100;
+                }
+            } else {
+                position = lockIt;
+                selection = extendedFingers;   
+                frameCounter = 0;
+            }
         } else if (!shapePicked) { //pick a shape
             var extendedFingers = 0;
             for(var f = 0; f < hand.fingers.length; f++){
@@ -116,6 +166,7 @@ Leap.loop(function (frame) {
                 frameCounter++;   
                 if (frameCounter == 25) {
                     addColor(extendedFingers);
+                    selection = 100;
                     frameCounter = 0;
                 }
             } else {
@@ -142,7 +193,7 @@ function getSlots() {
     
     for (i; i < totalSlots; i++) {
         var x = startingXPos + (i * (slotSize + gapSize));
-        slots[i] = { x: x, y: startingYPos };
+        slots[i] = { x: x, y: startingYPos, cX: x + slotSize/2, cY: startingYPos + slotSize/2 };
         shapes[i] = { x: x - 5, y: startingYPos - 5 };
     }    
         
