@@ -7,9 +7,9 @@ var width = document.documentElement.clientWidth,
     showing = false,
     current,
     slots = [], //holds position of slots
-    shapes = [], //position of shapes
     guess = [], //players guesses
     actual = [], //actual values
+    filled = [], //which slots have been filled with a guess
     color = ["0xFF0000","0x001EFF","0xFFDA00","0x067A29","0x931493"],
     grabed,
     position,
@@ -20,17 +20,19 @@ var width = document.documentElement.clientWidth,
     frameCounter = 0,
     check,
     trash,
-    shapePicked = false;
+    shapePicked = false,
+    ps,
+    pcol;
  
 function preload() {
-    game.load.spritesheet('1', 'assets/circle.png', 400, 400); //only need shapes
-    game.load.spritesheet('2', 'assets/hexagon.png', 400, 400);
-    game.load.spritesheet('3', 'assets/octagon.png', 400, 400);
-    game.load.spritesheet('4', 'assets/pentagon.png', 400, 400);
-    game.load.spritesheet('5', 'assets/square.png', 400, 400);
-    game.load.spritesheet('trash', 'assets/trash.png', 210, 210);
-    game.load.spritesheet('slot', 'assets/slot.png', 210, 210);
-    game.load.spritesheet('check', 'assets/check.png', 30, 30);
+    game.load.image('1', 'assets/circle.png'); //only need shapes
+    game.load.image('2', 'assets/hexagon.png');
+    game.load.image('3', 'assets/octagon.png');
+    game.load.image('4', 'assets/pentagon.png');
+    game.load.image('5', 'assets/square.png');
+    game.load.image('trash', 'assets/trash.png');
+    game.load.image('slot', 'assets/slot.png');
+    game.load.image('check', 'assets/check.png');
     getSlots();
 }
 
@@ -40,7 +42,9 @@ function create() {
     grabed = game.add.sprite(-3000, -3000, '1');
     
     for (var i = 0; i < slots.length; i++) {
-        game.add.sprite(slots[i].x, slots[i].y, 'slot')   
+        var tmp = game.add.sprite(slots[i].x, slots[i].y, 'slot');
+        tmp.height = 210;
+        tmp.width = 210;
     }
     
     trash = game.add.sprite(slots[slots.length-1].x, slots[0].y + 240, 'trash');
@@ -78,6 +82,7 @@ function moveGrabbed(position, roll) {
 
 function addShape(type) {
     if (type == 0 && shape > 0) {
+        ps = shape;
         shape = 0;
         shapePicked = true;  
         addCheck();
@@ -100,20 +105,40 @@ function addColor(type) {
     } else if (type > 0 && type < 6) {
         col = type;
         type = type - 1;
+        pcol = type;
         grabed.tint = color[type];
     }
 }
 
 function slotLocker(slot) {
     if (slot == -1) {
-        
+
     } else if (slot == 'trash') {
         grabed.kill();
         locked = true;
-    } else if (slot >= 0 && slot < slots.length -1) {
-     //lock the shape in 
-        grabed.kill();
-        locked = true;
+    } else if (slot >= 0 && slot < slots.length) {
+        if (filled[slot]) {
+            grabed.kill();
+            locked = true;  
+        } else { 
+            filled[slot] = true;
+            var tmp = game.add.sprite(slots[slot].x + 5, slots[slot].y + 5, ps);
+            tmp.height = 200;
+            tmp.width = 200;
+            console.log("Value of pcol is now" + pcol);
+            tmp.tint = color[pcol];
+
+            var thisGuess = {
+                slot: slot,
+                shape: ps,
+                color: pcol
+            };
+
+            guess.push(thisGuess);
+
+            grabed.kill();
+            locked = true;
+        }
     }
 }
 
@@ -194,7 +219,6 @@ function getSlots() {
     for (i; i < totalSlots; i++) {
         var x = startingXPos + (i * (slotSize + gapSize));
         slots[i] = { x: x, y: startingYPos, cX: x + slotSize/2, cY: startingYPos + slotSize/2 };
-        shapes[i] = { x: x - 5, y: startingYPos - 5 };
     }    
         
 }
