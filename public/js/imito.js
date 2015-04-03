@@ -11,6 +11,7 @@ var width = document.documentElement.clientWidth,
     guess = [], //players guesses
     actual = [], //actual values
     filled = [], //which slots have been filled with a guess
+    guessholder = [], //holds the sprites for guesses
     color = ["0xFF0000","0x001EFF","0xFFDA00","0x067A29","0x931493"],
     grabed,
     position,
@@ -23,6 +24,7 @@ var width = document.documentElement.clientWidth,
     trash,
     shapePicked = false,
     ps,
+    startTime,
     pcol;
  
 function preload() {
@@ -54,7 +56,20 @@ function create() {
 }
 
 function update() {
-
+    if (!showing && !active) {
+        time = 30000 - (new Date().getTime() - startTime);
+        if (time <= 0) {
+            active = false;
+            showing = true;
+            document.getElementById("gtext").innerHTML = "Times Up!, Hold out 4 fingers to try again!";
+            var i;
+            for (i = 0; i < guessholder.length; i++) {
+                guessholder[i].kill();   
+            }
+        } else {
+            document.getElementById("gtext").innerHTML = "Time Remaning: " + time;   
+        }
+    }
 }
 
 function checkBounds() {
@@ -127,6 +142,8 @@ function slotLocker(slot) {
             tmp.height = 200;
             tmp.width = 200;
             tmp.tint = color[pcol];
+            
+            guessholder.push(tmp);
 
             var thisGuess = {
                 slot: slot,
@@ -143,6 +160,7 @@ function slotLocker(slot) {
 }
 
 function makePattern() {
+    document.getElementById("gtext").innerHTML = "Game Starting"
     var rand,
         i,
         j,
@@ -178,6 +196,8 @@ function startGame(val) {
         shown[i].kill();
         active = false;
     }
+    startTime = new Date().getTime();
+    document.getElementById("gtext").innerHTML = "Time Remaning: " + 30000;
 }
 
 function showPattern(id) {
