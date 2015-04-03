@@ -4,8 +4,9 @@ var width = document.documentElement.clientWidth,
     level = 0,
     active = false,
     guessing = false,
-    showing = false,
+    showing = true,
     current,
+    shown = [], //holds the sprite object for the intial display of the array
     slots = [], //holds position of slots
     guess = [], //players guesses
     actual = [], //actual values
@@ -125,7 +126,6 @@ function slotLocker(slot) {
             var tmp = game.add.sprite(slots[slot].x + 5, slots[slot].y + 5, ps);
             tmp.height = 200;
             tmp.width = 200;
-            console.log("Value of pcol is now" + pcol);
             tmp.tint = color[pcol];
 
             var thisGuess = {
@@ -142,29 +142,56 @@ function slotLocker(slot) {
     }
 }
 
+function makePattern() {
+    var rand,
+        i,
+        j,
+        tmp;
+    
+    for (i = 0; i < slots.length; i++) { //fill guesses
+        tmp = {
+            slot: i,
+            shape: Math.floor((Math.random() * 5) + 1),
+            color: Math.floor((Math.random() * 4) + 0)
+        };
+        actual.push(tmp);
+    }
+    
+    for (i = actual.length - 1; i > 0; i--) { //Fisher-Yates Shuffle of array
+        j = Math.floor(Math.random() * (i + 1));
+        tmp = actual[i];
+        actual[i] = actual[j];
+        actual[j] = tmp;
+    }
+    
+    for (i = 0; i < slots.length; i++) {     //"Play" the array back to the player
+        game.time.events.add(2000 * i, this.showPattern, this, i);
+    }
+    
+    game.time.events.add(slots.length * 2000, this.startGame, this, true);
+     
+}
+
+function startGame(val) {
+    var i;
+    for (i = 0; i < actual.length; i++) {
+        shown[i].kill();
+        active = false;
+    }
+}
+
+function showPattern(id) {
+    var tmp = game.add.sprite(slots[actual[id].slot].x + 5, slots[actual[id].slot].y + 5, actual[id].shape);
+    tmp.height = 200;
+    tmp.width = 200;
+    tmp.tint = color[actual[id].color];
+    
+    shown.push(tmp);
+}
+
 Leap.loop(function (frame) {
     frame.hands.forEach(function(hand, index) {
-        if (!locked) { //ready to be placed?
-            moveGrabbed(frame.interactionBox.normalizePoint(hand.palmPosition, true), hand.roll());
-            var lockIt = checkBounds();
-            var extendedFingers = 0;
-            for(var f = 0; f < hand.fingers.length; f++){
-                var finger = hand.fingers[f];
-                if(finger.extended) extendedFingers++;
-            }
-            if (selection == extendedFingers && position == lockIt) {
-                frameCounter++;   
-                if (frameCounter == 25 && extendedFingers == 0) {
-                    slotLocker(lockIt);
-                    frameCounter = 0;
-                    selection = 100;
-                }
-            } else {
-                position = lockIt;
-                selection = extendedFingers;   
-                frameCounter = 0;
-            }
-        } else if (!shapePicked) { //pick a shape
+        if (showing) {
             var extendedFingers = 0;
             for(var f = 0; f < hand.fingers.length; f++){
                 var finger = hand.fingers[f];
@@ -173,7 +200,11 @@ Leap.loop(function (frame) {
             if (selection == extendedFingers) {
                 frameCounter++;   
                 if (frameCounter == 25) {
-                    addShape(extendedFingers);
+                    if (selection == 4) {
+                        active = true;  //begin the pattern
+                        makePattern();
+                        showing = false; //turn off inital state
+                    }
                     selection = 100;
                     frameCounter = 0;
                 }
@@ -181,30 +212,65 @@ Leap.loop(function (frame) {
                 selection = extendedFingers;   
                 frameCounter = 0;
             }
-        } else if (shapePicked) { //pick a color
-            var extendedFingers = 0;
-            for(var f = 0; f < hand.fingers.length; f++){
-                var finger = hand.fingers[f];
-                if(finger.extended) extendedFingers++;
-            }
-            if (selection == extendedFingers) {
-                frameCounter++;   
-                if (frameCounter == 25) {
-                    addColor(extendedFingers);
-                    selection = 100;
+        } else if (!showing && !active){ //ready for player input?
+            if (!locked) { //ready to be placed?
+                moveGrabbed(frame.interactionBox.normalizePoint(hand.palmPosition, true), hand.roll());
+                var lockIt = checkBounds();
+                var extendedFingers = 0;
+                for(var f = 0; f < hand.fingers.length; f++){
+                    var finger = hand.fingers[f];
+                    if(finger.extended) extendedFingers++;
+                }
+                if (selection == extendedFingers && position == lockIt) {
+                    frameCounter++;   
+                    if (frameCounter == 25 && extendedFingers == 0) {
+                        slotLocker(lockIt);
+                        frameCounter = 0;
+                        selection = 100;
+                    }
+                } else {
+                    position = lockIt;
+                    selection = extendedFingers;   
                     frameCounter = 0;
                 }
-            } else {
-                selection = extendedFingers;   
-                frameCounter = 0;
+            } else if (!shapePicked) { //pick a shape
+                var extendedFingers = 0;
+                for(var f = 0; f < hand.fingers.length; f++){
+                    var finger = hand.fingers[f];
+                    if(finger.extended) extendedFingers++;
+                }
+                if (selection == extendedFingers) {
+                    frameCounter++;   
+                    if (frameCounter == 25) {
+                        addShape(extendedFingers);
+                        selection = 100;
+                        frameCounter = 0;
+                    }
+                } else {
+                    selection = extendedFingers;   
+                    frameCounter = 0;
+                }
+            } else if (shapePicked) { //pick a color
+                var extendedFingers = 0;
+                for(var f = 0; f < hand.fingers.length; f++){
+                    var finger = hand.fingers[f];
+                    if(finger.extended) extendedFingers++;
+                }
+                if (selection == extendedFingers) {
+                    frameCounter++;   
+                    if (frameCounter == 25) {
+                        addColor(extendedFingers);
+                        selection = 100;
+                        frameCounter = 0;
+                    }
+                } else {
+                    selection = extendedFingers;   
+                    frameCounter = 0;
+                }
             }
         }
     });
 }).use('screenPosition', { scale: 0.25 });
-
-function createPattern() {
-    Math.floor((Math.random() * 10) + 0);
-}
 
 function getSlots() {
     var totalSlots = 5,

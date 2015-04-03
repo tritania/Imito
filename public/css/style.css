@@ -14,8 +14,12 @@ body {
     position: fixed;
     top:8%;
     left:50%;
-    margin-left: -150px;
-    width: 300px;
+    margin-left: -300px;
+    width: 600px;
     text-align:center;
     z-index: 3;
+}
+
+#gtext {
+    font-size: 30px;
 }
