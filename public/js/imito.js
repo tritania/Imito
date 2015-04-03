@@ -63,6 +63,7 @@ function update() {
             active = false;
             showing = true;
             document.getElementById("gtext").innerHTML = "Times Up!, Hold out 4 fingers to try again!";
+            grabed.kill();
             var i;
             for (i = 0; i < guessholder.length; i++) {
                 guessholder[i].kill();   
