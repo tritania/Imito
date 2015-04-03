@@ -10,7 +10,7 @@ var width = document.documentElement.clientWidth,
     slots = [], //holds position of slots
     guess = [], //players guesses
     actual = [], //actual values
-    filled = [], //which slots have been filled with a guess
+    filled = [false, false, false, false, false], //which slots have been filled with a guess
     guessholder = [], //holds the sprites for guesses
     color = ["0xFF0000","0x001EFF","0xFFDA00","0x067A29","0x931493"],
     grabed,
@@ -25,6 +25,7 @@ var width = document.documentElement.clientWidth,
     shapePicked = false,
     ps,
     startTime,
+    totalTime = 40000,
     pcol;
  
 function preload() {
@@ -42,7 +43,7 @@ function preload() {
 function create() {
     game.stage.backgroundColor = '#2f2f2b';
     game.physics.startSystem(Phaser.Physics.P2JS);
-    grabed = game.add.sprite(-3000, -3000, '1');
+    grabed = game.add.sprite(-3000, -3000, '1'); //have to add an inital sprite
     
     for (var i = 0; i < slots.length; i++) {
         var tmp = game.add.sprite(slots[i].x, slots[i].y, 'slot');
@@ -57,7 +58,7 @@ function create() {
 
 function update() {
     if (!showing && !active) {
-        time = 30000 - (new Date().getTime() - startTime);
+        time = totalTime - (new Date().getTime() - startTime);
         if (time <= 0) {
             active = false;
             showing = true;
@@ -67,7 +68,24 @@ function update() {
                 guessholder[i].kill();   
             }
         } else {
-            document.getElementById("gtext").innerHTML = "Time Remaning: " + time;   
+            var i,
+                done = true;
+            for (i = 0; i < filled.length; i++) {
+                if (filled[i] != true) {
+                    done = false   
+                }
+            }
+            if (done) { //check win case
+                for (i = 0; i < actual.length; i++) {
+                    if (actual[i].slot == guess[i].slot && actual[i].shape == guess[i].shape && actual[i].color == guess[i].color) {
+                        document.getElementById("gtext").innerHTML = "Correct! , Hold out 4 fingers to try another round!"
+                    } else {
+                        document.getElementById("gtext").innerHTML = "Wrong Pattern, Hold out 4 fingers to try again!"
+                    }
+                }
+            } else {
+                document.getElementById("gtext").innerHTML = "Time Remaning: " + time;   
+            }
         }
     }
 }
